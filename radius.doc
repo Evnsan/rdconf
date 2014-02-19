@@ -1,0 +1,14 @@
+Instalação:
+[shacoradius:~]# apt-get install freeradius
+Pacotes instalados:
+	freeradius		freeradius-common	freeradius-utils
+	libdbi-perl		libfreeradius2		libltdl7
+	libnet-daemon-perl	libpcap0.8		libperl5.14
+	libplrpc-perl		libpython2.7		ssl-cert
+#obs: FreeRadius Version 2.1.12
+
+[shacoradius:~]# apt-get install freeradius-krb5
+Pacotes instalados:
+	freeradius-krb5
+
+

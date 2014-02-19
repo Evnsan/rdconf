@@ -1,0 +1,106 @@
+[shacoradius:~]# apt-get install xinetd
+Pacotes instalados:
+	libfile-copy-recursive-perl	update-inetd xinetd
+
+[shacoradius:~]# apt-get install krb5-{admin-server,user}
+Pacotes instalados:
+	krb5-admin-server	krb5-config		krb5-kdc
+	krb5-user		libev4			libgssrpc4
+	libkadm5clnt-mit8	libkadm5srv-mit8	libkdb5-6
+	libverto-libev1		libverto1
+
+Opções do autoconf:
+REALM: RADTEST.LINUX.IME.USP.BR
+Kerberos Servers: shacoradius.linux.ime.usp.br
+Adm Kerberos Server: shacoradius.linux.ime.usp.br
+
+Criar arquivo de inicialização do xinetd:
+[shacoradius:~]# vim /etc/xinetd.d/krb_prop
+	service krb_prop
+	{
+		disable		= no
+		socket_type	= stream
+		protocol	= tcp
+		user		= root
+		wait		= no
+		server		= /usr/sbin/kpropd
+	}
+Reiniciar o serviço xinetd:
+[shacoradius:~]# /etc/init.d/xinetd restart
+
+Criar REALM:
+[shacoradius:~]# krb5_newrealm
+master key name: K/M@RADTEST.LINUX.IME.USP.BR
+chave: admKDCROOt5
+
+Editar autorização para */admin e admin:
+[shacoradius:~]# vim /etc/krb5kdc/kadm5.acl
+	*/admin *
+	admin *
+
+Editar krb5.conf:
+[shacoradius:~]# vim /etc/krb5.conf
+	[libdefaults]
+		default_realm = RADTEST.LINUX.IME.USP.BR
+	# The following krb5.conf variables are only for MIT Kerberos.
+		kdc_timesync = 1
+		ccache_type = 4
+		forwardable = true
+		proxiable = true
+	[realms]
+		RADTEST.LINUX.IME.USP.BR = {
+			kdc = shacoradius.linux.ime.usp.br
+			admin_server = shacoradius.linux.ime.usp.br
+		}
+
+	[domain_realm]
+		.radtest.linux.ime.usp.br = RADTEST.LINUX.IME.USP.BR
+		radtest.linux.ime.usp.br = RADTEST.LINUX.IME.USP.BR
+	[logging]
+		kdc = FILE:/var/log/krb5/kdc.log
+		admin_server = FILE:/var/log/krb5/kadmin.log
+		default = FILE:/var/log/krb5/kadmin.log
+
+Criar o diretorio de logging:
+[shacoradius:~]# mkdir /var/log/krb5
+
+Criar arquivos para logrotate:
+[shacoradius:~]# vim /etc/logrotate.d/krb5-kdc
+	/var/log/krb5/kdc.log {
+		daily
+		missingok
+		rotate 7
+		compress
+		delaycompress
+		notifempty
+		postrotate
+			/etc/init.d/krb5-kdc restart > /dev/null
+		endscript
+	}
+
+[shacoradius:~]# vim /etc/logrotate.d/krb5-kadmin
+	/var/log/krb5/kadmin.log {
+		daily
+		missingok
+		rotate 7
+		compress
+		delaycompress
+		notifempty
+		postrotate
+			/etc/init.d/krb5-admin-server restart > /dev/null
+		endscript
+	}
+
+Editar a duração do ticket:
+[shacoradius:~]# kadmin.local 
+	kadmin.local:  modprinc -maxlife "1 day" -maxrenewlife "10 day" krbtgt/RADTEST.LINUX.IME.USP.BR
+
+[shacoradius:~]# vim /etc/krb5kdc/kdc.conf
+	max_life = 1d 0h 0m 0s
+	max_renewable_life = 10d 0h 0m 0s
+
+Reiniciar o server:
+[shacoradius:~]# /etc/init.d/krb5-admin-server restart; /etc/init.d/krb5-kdc restart
+
+
+
