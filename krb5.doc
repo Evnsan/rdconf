@@ -31,7 +31,7 @@ Reiniciar o serviço xinetd:
 Criar REALM:
 [shacoradius:~]# krb5_newrealm
 master key name: K/M@RADTEST.LINUX.IME.USP.BR
-chave: admKDCROOt5
+chave: ********** 
 
 Editar autorização para */admin e admin:
 [shacoradius:~]# vim /etc/krb5kdc/kadm5.acl
