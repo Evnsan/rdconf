@@ -11,4 +11,22 @@ Pacotes instalados:
 Pacotes instalados:
 	freeradius-krb5
 
+Teste inicial:
+Editar o arquivo users adicionando a seguinte linha de teste
+	root@shacoradius: ~> vim /etc/freeradius/clients.conf
+		user_name Cleartext-Password := "password"
+	obs: substituir o user_name e o password por um teste adequado
+	obs2: deixar o password entre aspas
+Iniciar o servidor em modo debugging
+	root@shacoradius: ~> freeradius -X
+	obs: caso servidor ja estiver rodando, aparecerá uma mensagem de erro.
+		Failed binding to authentication address * port 1812: Address already in use /etc/freeradius/radiusd.conf[240]: Error binding to port for 0.0.0.0 port 1812
+		Neste caso pare o serviço antes de iniciar em modo teste
+			root@shacoradius: ~> service freeradius stop
+			root@shacoradius: ~> freeradius -X
+Rodar o radtest de um outro terminal
+	 root@shacoradius: ~> radtest "user_name" password 127.0.0.1 0 testing123
 
+Deve aparecer uma resposta do servidor com a mensagem Access-Accept.
+
+Configurando o freeradius com krb5 (ttls-pap)
